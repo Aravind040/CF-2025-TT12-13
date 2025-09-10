@@ -23,8 +23,8 @@
 
 module axi4lite_tb;
 
-    localparam ADDR_WIDTH = 2;
-    localparam DATA_WIDTH = 8;
+    //localparam ADDR_WIDTH = 2;
+    //localparam DATA_WIDTH = 8;
 
     reg clk;
     reg rst_n;
@@ -40,10 +40,7 @@ module axi4lite_tb;
     wire [7:0] uo_out;
 
     // DUT
-    tt_um_axi4lite_top #(
-        .ADDR_WIDTH(2),
-        .DATA_WIDTH(8)
-    ) dut (
+    tt_um_axi4lite_top dut (
         .clk    (clk),
         .rst_n  (rst_n),
         .ena    (ena),
