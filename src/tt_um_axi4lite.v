@@ -21,7 +21,7 @@
 
 `timescale 1ns / 1ps
 
-module tt_um_axi4lite_top #
+module tt_um_axi4lite #
 (
     parameter ADDR_WIDTH = 2,
     parameter DATA_WIDTH = 8
