@@ -40,7 +40,7 @@ module axi4lite_tb;
     wire [7:0] uo_out;
 
     // DUT
-    axi4lite_top #(
+    tt_um_axi4lite_top #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH)
     ) dut (
