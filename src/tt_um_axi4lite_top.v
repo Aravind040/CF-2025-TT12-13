@@ -21,11 +21,7 @@
 
 `timescale 1ns / 1ps
 
-module tt_um_axi4lite_top #
-(
-    parameter ADDR_WIDTH = 2,
-    parameter DATA_WIDTH = 8
-)
+module tt_um_axi4lite_top
 (
     input  wire                        clk,
     input  wire                        rst_n ,
@@ -45,9 +41,9 @@ module tt_um_axi4lite_top #
     
 );
      wire                        start_write;
-     wire [ADDR_WIDTH-1:0]       write_addr;
+    wire [1:0]       write_addr;
      wire                        start_read;
-     wire [ADDR_WIDTH-1:0]       read_addr;
+     wire [1:0]       read_addr;
      wire                        done;
      assign start_write=ui_in[0];
      assign write_addr=ui_in[2:1];
@@ -58,29 +54,26 @@ module tt_um_axi4lite_top #
      assign uio_oe=0;
      
     // Expose AXI signals for simulation visibility
-     wire [ADDR_WIDTH-1:0] awaddr;
+     wire [1:0] awaddr;
      wire                  awvalid;
      wire                  awready;
-     wire [DATA_WIDTH-1:0] wdata;
-     wire [DATA_WIDTH/8-1:0] wstrb;
+     wire [7:0] wdata;
+    wire [8/8-1:0] wstrb;
      wire                  wvalid;
      wire                  wready;
      wire [1:0]            bresp;
      wire                  bvalid;
      wire                  bready;
-     wire [ADDR_WIDTH-1:0] araddr;
+     wire [1:0] araddr;
      wire                  arvalid;
      wire                  arready;
-     wire [DATA_WIDTH-1:0] rdata;
+     wire [7:0] rdata;
      wire [1:0]            rresp;
      wire                  rvalid;
      wire                  rready;
      
     // Master instance
-    axi4lite_master #(
-        .C_M_AXI_ADDR_WIDTH(ADDR_WIDTH),
-        .C_M_AXI_DATA_WIDTH(DATA_WIDTH)
-    ) master_inst (
+    axi4lite_master master_inst (
         .m_axi_aclk    (clk),
         .m_axi_aresetn (rst_n ),
 
@@ -117,10 +110,7 @@ module tt_um_axi4lite_top #
     );
 
     // Slave instance
-    axi4lite_slave #(
-        .C_S_AXI_ADDR_WIDTH(ADDR_WIDTH),
-        .C_S_AXI_DATA_WIDTH(DATA_WIDTH)
-    ) slave_inst (
+    axi4lite_slave slave_inst (
         .s_axi_aclk    (clk),
         .s_axi_aresetn (rst_n ),
 
