@@ -22,23 +22,19 @@
 
 `timescale 1ns / 1ps
 
-module axi4lite_slave #
-(
-    parameter C_S_AXI_ADDR_WIDTH = 2,
-    parameter C_S_AXI_DATA_WIDTH = 8
-)
+module axi4lite_slave 
 (
     input  wire                          s_axi_aclk,
     input  wire                          s_axi_aresetn,
 
     // Write address channel
-    input  wire [C_S_AXI_ADDR_WIDTH-1:0] s_axi_awaddr,
+    input  wire [1:0] s_axi_awaddr,
     input  wire                          s_axi_awvalid,
     output reg                           s_axi_awready,
 
     // Write data channel
-    input  wire [C_S_AXI_DATA_WIDTH-1:0] s_axi_wdata,
-    input  wire [C_S_AXI_DATA_WIDTH/8-1:0] s_axi_wstrb,
+    input  wire [7:0] s_axi_wdata,
+    input  wire [8/8-1:0] s_axi_wstrb,
     input  wire                          s_axi_wvalid,
     output reg                           s_axi_wready,
 
@@ -48,19 +44,19 @@ module axi4lite_slave #
     input  wire                          s_axi_bready,
 
     // Read address channel
-    input  wire [C_S_AXI_ADDR_WIDTH-1:0] s_axi_araddr,
+    input  wire [1:0] s_axi_araddr,
     input  wire                          s_axi_arvalid,
     output reg                           s_axi_arready,
 
     // Read data channel
-    output reg [C_S_AXI_DATA_WIDTH-1:0]  s_axi_rdata,
+    output reg [7:0]  s_axi_rdata,
     output reg [1:0]                     s_axi_rresp,
     output reg                           s_axi_rvalid,
     input  wire                          s_axi_rready
 );
 
     // Register file (word addressed)
-    reg [C_S_AXI_DATA_WIDTH-1:0] regfile [0:7];  // 256 x 32-bit
+    reg [7:0] regfile [0:7];  // 256 x 32-bit
 
     always @(posedge s_axi_aclk) begin
         if (!s_axi_aresetn) begin
