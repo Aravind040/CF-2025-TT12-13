@@ -22,23 +22,19 @@
 
 `timescale 1ns / 1ps
 
-module axi4lite_master #
-(
-    parameter C_M_AXI_ADDR_WIDTH = 2,
-    parameter C_M_AXI_DATA_WIDTH = 8
-)
+module axi4lite_master
 (
     input  wire                         m_axi_aclk,
     input  wire                         m_axi_aresetn,
 
     // Write address channel
-    output reg  [C_M_AXI_ADDR_WIDTH-1:0] m_axi_awaddr,
+    output reg  [1:0] m_axi_awaddr,
     output reg                           m_axi_awvalid,
     input  wire                          m_axi_awready,
 
     // Write data channel
-    output reg  [C_M_AXI_DATA_WIDTH-1:0] m_axi_wdata,
-    output reg  [C_M_AXI_DATA_WIDTH/8-1:0] m_axi_wstrb,
+    output reg  [:0] m_axi_wdata,
+    output reg  [8/8-1:0] m_axi_wstrb,
     output reg                           m_axi_wvalid,
     input  wire                          m_axi_wready,
 
@@ -48,12 +44,12 @@ module axi4lite_master #
     output reg                           m_axi_bready,
 
     // Read address channel
-    output reg  [C_M_AXI_ADDR_WIDTH-1:0] m_axi_araddr,
+    output reg  [1:0] m_axi_araddr,
     output reg                           m_axi_arvalid,
     input  wire                          m_axi_arready,
 
     // Read data channel
-    input  wire [C_M_AXI_DATA_WIDTH-1:0] m_axi_rdata,
+    input  wire [1:0] m_axi_rdata,
     input  wire [1:0]                    m_axi_rresp,
     input  wire                          m_axi_rvalid,
     output reg                           m_axi_rready,
@@ -61,12 +57,12 @@ module axi4lite_master #
     output reg                           done,
 
     // User interface
-    input  wire [C_M_AXI_ADDR_WIDTH-1:0] write_addr,
+    input  wire [1:0] write_addr,
     input  wire                          start_write,
-    input  wire [C_M_AXI_DATA_WIDTH-1:0] uio_in,
-    input  wire [C_M_AXI_ADDR_WIDTH-1:0] read_addr,
+    input  wire [7:0] uio_in,
+    input  wire [1:0] read_addr,
     input  wire                          start_read,
-    output  reg [C_M_AXI_DATA_WIDTH-1:0] read_data    
+    output  reg [7:0] read_data    
 );
 
     // Master FSM states
@@ -109,7 +105,7 @@ module axi4lite_master #
             m_axi_awaddr  <= 0;
             m_axi_awvalid <= 0;
             m_axi_wdata   <= 0;
-            m_axi_wstrb   <= {C_M_AXI_DATA_WIDTH/8{1'b1}};
+            m_axi_wstrb   <= {8/8{1'b1}};
             m_axi_wvalid  <= 0;
             m_axi_bready  <= 0;
             m_axi_araddr  <= 0;
@@ -133,7 +129,7 @@ module axi4lite_master #
                 WRITE_DATA: begin
                     m_axi_wdata   <= uio_in;
                     m_axi_wvalid  <= 1'b1;
-                    m_axi_wstrb   <= {C_M_AXI_DATA_WIDTH/8{1'b1}};
+                    m_axi_wstrb   <= {8/8{1'b1}};
                 end
                 WRITE_RESP: begin
                     m_axi_bready  <= 1'b1;
