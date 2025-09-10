@@ -33,7 +33,7 @@ module axi4lite_master
     input  wire                          m_axi_awready,
 
     // Write data channel
-    output reg  [:0] m_axi_wdata,
+    output reg  [7:0] m_axi_wdata,
     output reg  [8/8-1:0] m_axi_wstrb,
     output reg                           m_axi_wvalid,
     input  wire                          m_axi_wready,
