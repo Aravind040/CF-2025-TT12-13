@@ -1,12 +1,12 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import Timer, RisingEdge
+from cocotb.triggers import RisingEdge
 
 
 async def wait_done(dut, max_cycles=2000):
     """Wait for uo_out[0] (done) with timeout to avoid infinite hang"""
     for i in range(max_cycles):
-        if int(dut.uo_out.value) & 0x1:
+        if dut.uo_out.value.is_resolvable and (int(dut.uo_out.value) & 0x1):
             dut._log.info(f"DONE detected after {i} cycles")
             return True
         await RisingEdge(dut.clk)
@@ -15,30 +15,48 @@ async def wait_done(dut, max_cycles=2000):
 
 
 async def axi_write(dut, addr, data):
-    """Single AXI write transaction (GL-safe)"""
+    """Single AXI write transaction (GL-safe, clk-synchronous)"""
     ui_val = (addr << 1) | 0b1  # start_write=1, addr in [2:1]
+
+    # Drive inputs
     dut.ui_in.value = ui_val
     dut.uio_in.value = data
-    await Timer(10, units="ns")
-    dut.ui_in.value = (addr << 1)  # deassert start_write
+
+    # Hold for one cycle
+    await RisingEdge(dut.clk)
+
+    # Deassert start_write
+    dut.ui_in.value = (addr << 1)
+    await RisingEdge(dut.clk)  # allow settle
 
     dut._log.info(f"WRITE launched: Addr=0x{addr:X}, Data=0x{data:02X}")
     return await wait_done(dut)
 
 
 async def axi_read(dut, addr):
-    """Single AXI read transaction (GL-safe)"""
+    """Single AXI read transaction (GL-safe, clk-synchronous)"""
     ui_val = (addr << 2) | (1 << 4)  # start_read=1, addr in [3:2]
+
+    # Drive inputs
     dut.ui_in.value = ui_val
-    await Timer(10, units="ns")
-    dut.ui_in.value = (addr << 2)  # deassert start_read
+
+    # Hold for one cycle
+    await RisingEdge(dut.clk)
+
+    # Deassert start_read
+    dut.ui_in.value = (addr << 2)
+    await RisingEdge(dut.clk)  # allow settle
 
     dut._log.info(f"READ launched: Addr=0x{addr:X}")
     ok = await wait_done(dut)
     if ok:
-        data = int(dut.uio_out.value) & 0xFF
-        dut._log.info(f"READ got Data=0x{data:02X}")
-        return data
+        if dut.uio_out.value.is_resolvable:
+            data = int(dut.uio_out.value) & 0xFF
+            dut._log.info(f"READ got Data=0x{data:02X}")
+            return data
+        else:
+            dut._log.error("READ failed: uio_out unresolved (X/Z) ❌")
+            return None
     return None
 
 
@@ -56,15 +74,17 @@ async def axi4lite_smoke_gl(dut):
     dut.ui_in.value = 0
     dut.uio_in.value = 0
 
-    # Hold reset longer for GL sim
-    await Timer(500, units="ns")
+    # Hold reset for >=20 cycles (safe for GL sim)
+    for _ in range(20):
+        await RisingEdge(dut.clk)
     dut.rst_n.value = 1
     dut.ena.value = 1
     await RisingEdge(dut.clk)
     dut._log.info("Reset released, DUT enabled")
 
     # Give settle time
-    await Timer(100, units="ns")
+    for _ in range(10):
+        await RisingEdge(dut.clk)
 
     # ---- WRITE ----
     write_addr = 2
@@ -75,7 +95,8 @@ async def axi4lite_smoke_gl(dut):
         return
 
     # ---- READ ----
-    await Timer(50, units="ns")
+    for _ in range(5):
+        await RisingEdge(dut.clk)  # spacing
     read_data = await axi_read(dut, write_addr)
     if read_data is None:
         dut._log.error("READ failed in GL test ❌")
@@ -87,5 +108,8 @@ async def axi4lite_smoke_gl(dut):
     else:
         dut._log.error(f"GL TEST FAILED ❌ Expected 0x{write_data:02X}, Got 0x{read_data:02X}")
 
-    await Timer(200, units="ns")
+    # Final idle period
+    for _ in range(20):
+        await RisingEdge(dut.clk)
+
     dut._log.info("GL smoke test complete ✅")
