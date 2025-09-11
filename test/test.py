@@ -6,9 +6,10 @@ from cocotb.triggers import RisingEdge
 async def wait_done(dut, max_cycles=2000):
     """Wait for uo_out[0] (done) with timeout to avoid infinite hang"""
     for i in range(max_cycles):
-        if dut.uo_out.value.is_resolvable and (int(dut.uo_out.value) & 0x1):
-            dut._log.info(f"DONE detected after {i} cycles")
-            return True
+        if dut.uo_out.value.is_resolvable:
+            if int(dut.uo_out.value) & 0x1:
+                dut._log.info(f"DONE detected after {i} cycles")
+                return True
         await RisingEdge(dut.clk)
     dut._log.error("Timeout: DONE not seen ❌")
     return False
@@ -55,7 +56,7 @@ async def axi_read(dut, addr):
             dut._log.info(f"READ got Data=0x{data:02X}")
             return data
         else:
-            dut._log.error("READ failed: uio_out unresolved (X/Z) ❌")
+            dut._log.warning(f"READ unresolved: uio_out={dut.uio_out.value.binstr}")
             return None
     return None
 
