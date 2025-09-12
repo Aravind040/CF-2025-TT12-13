@@ -1,25 +1,4 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 12.09.2025 18:48:19
-// Design Name: 
-// Module Name: tt_um_axi4lite_top
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
-`timescale 1ns / 1ps
 
 module tt_um_axi4lite_top
 (
@@ -27,55 +6,52 @@ module tt_um_axi4lite_top
     input  wire                        rst_n ,
     input  wire                        ena,
 
-    // Control interface to Master
+    // Control interface to Master (ui_in mapping below)
     input  wire [7:0]       ui_in,
-    //input  wire                        start_write,
-    //input  wire [ADDR_WIDTH-1:0]       write_addr,
     input  wire [7:0]       uio_in,
-    //input  wire                        start_read,
-    //input  wire [ADDR_WIDTH-1:0]       read_addr,
     output wire [7:0]       uio_oe,
     output wire [7:0]       uio_out,
     output wire [7:0]       uo_out
-
-    
 );
-     wire                        start_write;
-    wire [1:0]       write_addr;
-     wire                        start_read;
-     wire [1:0]       read_addr;
-     wire                        done;
-     assign start_write=ui_in[0];
-     assign write_addr=ui_in[2:1];
-     assign read_addr=ui_in[3:2];
-     assign start_read=ui_in[4];
-     assign uo_out[0]=done;
-     assign uo_out[7:1]=0;
 
-     
+    // --- ui_in mapping (consistent, non-overlapping) ---
+    // ui_in[1:0] = address (2 bits)
+    // ui_in[2]   = start_write (pulse)
+    // ui_in[3]   = start_read  (pulse)
+    wire [1:0] write_addr  = ui_in[1:0];
+    wire [1:0] read_addr   = ui_in[1:0]; // share same addr field for read/write
+    wire       start_write = ui_in[2];
+    wire       start_read  = ui_in[3];
+
+    // status
+    wire       done;
+
+    assign uo_out[0] = done;
+    assign uo_out[7:1] = 7'b0;
+
     // Expose AXI signals for simulation visibility
-     wire [1:0] awaddr;
-     wire                  awvalid;
-     wire                  awready;
-     wire [7:0] wdata;
-    wire [8/8-1:0] wstrb;
-     wire                  wvalid;
-     wire                  wready;
-     wire [1:0]            bresp;
-     wire                  bvalid;
-     wire                  bready;
-     wire [1:0] araddr;
-     wire                  arvalid;
-     wire                  arready;
-     wire [7:0] rdata;
-     wire [1:0]            rresp;
-     wire                  rvalid;
-     wire                  rready;
- 
+    wire [1:0] awaddr;
+    wire       awvalid;
+    wire       awready;
+    wire [7:0] wdata;
+    wire [0:0] wstrb; // 1-bit strobe
+    wire       wvalid;
+    wire       wready;
+    wire [1:0] bresp;
+    wire       bvalid;
+    wire       bready;
+    wire [1:0] araddr;
+    wire       arvalid;
+    wire       arready;
+    wire [7:0] rdata;
+    wire [1:0] rresp;
+    wire       rvalid;
+    wire       rready;
+
     // Master instance
     axi4lite_master master_inst (
         .m_axi_aclk    (clk),
-        .m_axi_aresetn (rst_n ),
+        .m_axi_aresetn (rst_n),
 
         .m_axi_awaddr  (awaddr),
         .m_axi_awvalid (awvalid),
@@ -102,7 +78,7 @@ module tt_um_axi4lite_top
         // User interface
         .start_write   (start_write),
         .write_addr    (write_addr),
-        .uio_in   (uio_in),
+        .uio_in        (uio_in),
         .start_read    (start_read),
         .read_addr     (read_addr),
         .read_data     (uio_out),
@@ -112,7 +88,7 @@ module tt_um_axi4lite_top
     // Slave instance
     axi4lite_slave slave_inst (
         .s_axi_aclk    (clk),
-        .s_axi_aresetn (rst_n ),
+        .s_axi_aresetn (rst_n),
 
         .s_axi_awaddr  (awaddr),
         .s_axi_awvalid (awvalid),
@@ -136,5 +112,7 @@ module tt_um_axi4lite_top
         .s_axi_rvalid  (rvalid),
         .s_axi_rready  (rready)
     );
-assign uio_oe = 8'hFF;
+
+    assign uio_oe = 8'hFF;
+
 endmodule
