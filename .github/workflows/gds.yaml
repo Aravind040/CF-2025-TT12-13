@@ -7,6 +7,8 @@ on:
 jobs:
   gds:
     runs-on: ubuntu-24.04
+    env:
+      COCOTB_RESOLVE_X: ZERO
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
