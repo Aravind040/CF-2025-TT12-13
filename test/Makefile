@@ -42,7 +42,7 @@ COMPILE_ARGS += -I$(SRC_DIR)
 
 # ---------------- Top and Python test ----------------
 TOPLEVEL = tt_um_axi4lite_top
-MODULE   = test_axi4lite   # Python file: test_axi4lite.py
+MODULE   = test 
 
 # ---------------- Cocotb include ----------------
 include $(shell cocotb-config --makefiles)/Makefile.sim
