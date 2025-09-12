@@ -44,7 +44,7 @@ module tt_um_axi4lite_top
     wire [1:0]       write_addr;
      wire                        start_read;
      wire [1:0]       read_addr;
-     wire                        done=0;
+     wire                        done;
      assign start_write=ui_in[0];
      assign write_addr=ui_in[2:1];
      assign read_addr=ui_in[4:3];
