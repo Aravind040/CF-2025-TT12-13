@@ -3,7 +3,7 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 06.09.2025 15:03:13
+// Create Date: 12.09.2025 18:50:21
 // Design Name: 
 // Module Name: axi4lite_tb
 // Project Name: 
@@ -19,7 +19,6 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-`timescale 1ns / 1ps
 
 module axi4lite_tb;
 
@@ -69,7 +68,7 @@ module axi4lite_tb;
         // ---------------- WRITE ----------------
         #20;
         ui_in[0]   = 1;        // start_write
-        ui_in[2:1] = 2'h2;     // write_addr
+        ui_in[2:1] = 2'h1;     // write_addr
         uio_in     = 8'h4;     // write data
         #10 ui_in[0] = 0;      // deassert start_write
         wait(uo_out[0] == 1);  // wait for done
@@ -77,11 +76,11 @@ module axi4lite_tb;
 
         // ---------------- READ ----------------
         #20;
-        ui_in[4]   = 1;        // start_read
-        ui_in[3:2] = 2'h2;     // read_addr
-        #10 ui_in[4] = 0;      // deassert start_read
+        ui_in[5]   = 1;        // start_read
+        ui_in[4:3] = 2'h1;     // read_addr
+        #10 ui_in[5] = 0;      // deassert start_read
         wait(uo_out[0] == 1);  // wait for done
-        $display("READ:  Addr=0x%h Data=0x%h", ui_in[3:2], uio_out);
+        $display("READ:  Addr=0x%h Data=0x%h", ui_in[4:3], uio_out);
 
         // ---------------- CHECK ----------------
         if (uio_out == 8'h4)
