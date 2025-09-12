@@ -1,6 +1,3 @@
-import os
-os.environ["COCOTB_RESOLVE_X"] = "zero"
-
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, Timer
@@ -9,7 +6,7 @@ from cocotb.triggers import RisingEdge, Timer
 async def wait_done(dut, max_cycles=2000):
     """Wait for uo_out[0] (done) to assert, with timeout"""
     for i in range(max_cycles):
-        val = int(dut.uo_out.value) & 0x1
+        val = int(dut.uo_out.value) & 0x1  # safe integer read
         if val:
             dut._log.info(f"DONE detected at cycle {i} ✅")
             return True
@@ -36,25 +33,28 @@ async def axi_read(dut, addr):
     dut.ui_in.value &= ~(1 << 5)         # deassert start_read
     ok = await wait_done(dut)
     if ok:
-        return int(dut.uio_out.value) & 0xFF
+        return int(dut.uio_out.value) & 0xFF  # safe integer read
     return None
 
 
 @cocotb.test()
 async def axi4lite_ui_smoke(dut):
-    """GL-safe test using packed ui_in/uio_in interface"""
+    """Full AXI4-Lite test without forcing X resolution"""
 
-    # Clock
+    # ---------------- CLOCK ----------------
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
     dut._log.info("Clock started ✅")
 
-    # Reset
+    # ---------------- RESET ----------------
     dut.rst_n.value = 0
     dut.ena.value = 0
     dut.ui_in.value = 0
     dut.uio_in.value = 0
+
+    # Wait several cycles for proper initialization
     for _ in range(5):
         await RisingEdge(dut.clk)
+
     dut.rst_n.value = 1
     dut.ena.value = 1
     await RisingEdge(dut.clk)
@@ -70,7 +70,7 @@ async def axi4lite_ui_smoke(dut):
         return
 
     # ---------------- READ ----------------
-    await Timer(20, units="ns")
+    await Timer(20, units="ns")  # optional settling time
     read_data = await axi_read(dut, write_addr)
     if read_data is None:
         dut._log.error("READ failed ❌")
