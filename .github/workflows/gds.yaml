@@ -5,10 +5,13 @@ on:
   workflow_dispatch:
 
 jobs:
+  # -----------------------
+  # Build GDS
+  # -----------------------
   gds:
     runs-on: ubuntu-24.04
     steps:
-      - name: checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -19,6 +22,9 @@ jobs:
           pdk: sky130
           tools-ref: ttsky25a
 
+  # -----------------------
+  # Precheck
+  # -----------------------
   precheck:
     needs: gds
     runs-on: ubuntu-24.04
@@ -29,28 +35,34 @@ jobs:
           pdk: sky130
           tools-ref: ttsky25a
 
+  # -----------------------
+  # Gate-level simulation test
+  # -----------------------
   gl_test:
     needs: gds
     runs-on: ubuntu-24.04
     env:
-      COCOTB_RESOLVE_X: VALUE
+      COCOTB_RESOLVE_X: ZERO   # ✅ Treat all X/Z as 0
     steps:
-      - name: checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: GL test
+      - name: Run GL Test
         uses: TinyTapeout/tt-gds-action/gl_test@ttsky25a
         with:
           pdk: sky130
 
+  # -----------------------
+  # Viewer
+  # -----------------------
   viewer:
     needs: gds
     runs-on: ubuntu-24.04
     permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
+      pages: write      # Deploy to GitHub Pages
+      id-token: write   # Verify deployment source
     steps:
       - uses: TinyTapeout/tt-gds-action/viewer@ttsky25a
         with:
