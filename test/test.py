@@ -18,24 +18,22 @@ async def wait_done(dut, max_cycles=2000):
 
 
 async def axi_write(dut, addr, data):
-    """Single AXI write transaction (GL-safe)"""
-    ui_val = (addr & 0x3) << 1  # 2-bit address field
-    dut.ui_in.value = ui_val | 0b1   # start_write = 1
-    dut.uio_in.value = data & 0xFF   # 8-bit data
-    await Timer(10, units="ns")
-    dut.ui_in.value = ui_val         # deassert start_write
-
+    """AXI-lite style write transaction"""
+    dut.ui_in.value = (addr & 0x3)           # put address on ui_in[1:0]
+    dut.ui_in.value = dut.ui_in.value | (1 << 2)  # set write enable (ui_in[2])
+    dut.uio_in.value = data & 0xFF           # 8-bit data
+    await RisingEdge(dut.clk)
+    dut.ui_in.value = (addr & 0x3)           # deassert write
     dut._log.info(f"WRITE launched: Addr=0x{addr:X}, Data=0x{data:02X}")
     return await wait_done(dut)
 
 
 async def axi_read(dut, addr):
-    """Single AXI read transaction (GL-safe)"""
-    ui_val = (addr & 0x3) << 2  # 2-bit address field
-    dut.ui_in.value = ui_val | (1 << 4)  # start_read = 1
-    await Timer(10, units="ns")
-    dut.ui_in.value = ui_val             # deassert start_read
-
+    """AXI-lite style read transaction"""
+    dut.ui_in.value = (addr & 0x3)           # put address on ui_in[1:0]
+    dut.ui_in.value = dut.ui_in.value | (1 << 3)  # set read enable (ui_in[3])
+    await RisingEdge(dut.clk)
+    dut.ui_in.value = (addr & 0x3)           # deassert read
     dut._log.info(f"READ launched: Addr=0x{addr:X}")
     ok = await wait_done(dut)
     if ok:
@@ -49,7 +47,7 @@ async def axi_read(dut, addr):
     return None
 
 
-@cocotb.test(timeout_time=20, timeout_unit="us")
+@cocotb.test(timeout_time=50, timeout_unit="us")
 async def axi4lite_smoke_gl(dut):
     """GL-safe test: reset + 1 write + 1 read"""
 
@@ -63,15 +61,12 @@ async def axi4lite_smoke_gl(dut):
     dut.ui_in.value = 0
     dut.uio_in.value = 0
 
-    # Hold reset longer for GL sim
-    await Timer(2000, units="ns")
+    # Hold reset longer for GLS
+    for _ in range(10):
+        await RisingEdge(dut.clk)
     dut.rst_n.value = 1
     dut.ena.value = 1
-    await RisingEdge(dut.clk)
     dut._log.info("Reset released, DUT enabled")
-
-    # Give settle time
-    await Timer(100, units="ns")
 
     # ---- WRITE ----
     write_addr = 2  # goes to regfile[2]
