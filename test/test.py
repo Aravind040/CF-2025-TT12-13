@@ -16,25 +16,29 @@ async def wait_done(dut, max_cycles=2000):
     dut._log.error("Timeout: DONE not seen ❌")
     return False
 
-
 async def axi_write(dut, addr, data):
     """AXI-lite style write transaction"""
-    dut.ui_in.value = (addr & 0x3)           # put address on ui_in[1:0]
-    dut.ui_in.value = dut.ui_in.value | (1 << 2)  # set write enable (ui_in[2])
-    dut.uio_in.value = data & 0xFF           # 8-bit data
+    # encode bits properly
+    dut.ui_in.value = (addr & 0x3) << 1   # put addr on [2:1]
+    dut.ui_in.value = dut.ui_in.value | 0x1  # set ui_in[0] = start_write
+    dut.uio_in.value = data & 0xFF
+
     await RisingEdge(dut.clk)
-    dut.ui_in.value = (addr & 0x3)           # deassert write
+    dut.ui_in.value = 0  # deassert everything
     dut._log.info(f"WRITE launched: Addr=0x{addr:X}, Data=0x{data:02X}")
     return await wait_done(dut)
 
 
 async def axi_read(dut, addr):
     """AXI-lite style read transaction"""
-    dut.ui_in.value = (addr & 0x3)           # put address on ui_in[1:0]
-    dut.ui_in.value = dut.ui_in.value | (1 << 3)  # set read enable (ui_in[3])
+    # encode bits properly
+    dut.ui_in.value = (addr & 0x3) << 2   # put addr on [3:2]
+    dut.ui_in.value = dut.ui_in.value | (1 << 4)  # set ui_in[4] = start_read
+
     await RisingEdge(dut.clk)
-    dut.ui_in.value = (addr & 0x3)           # deassert read
+    dut.ui_in.value = 0  # deassert everything
     dut._log.info(f"READ launched: Addr=0x{addr:X}")
+
     ok = await wait_done(dut)
     if ok:
         val = dut.uio_out.value
