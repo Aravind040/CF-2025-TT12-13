@@ -69,8 +69,8 @@ async def axi4lite_smoke_gl(dut):
     dut._log.info("Reset released, DUT enabled")
 
     # ---- WRITE ----
-    write_addr = 2  # goes to regfile[2]
-    write_data = 0xAB
+    write_addr = 2  # regfile[2]
+    write_data = 0x04   # expected test value
     ok = await axi_write(dut, write_addr, write_data)
     if not ok:
         dut._log.error("WRITE failed in GL test ❌")
