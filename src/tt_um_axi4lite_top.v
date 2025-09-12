@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 06.09.2025 15:01:55
+// Create Date: 12.09.2025 18:48:19
 // Design Name: 
-// Module Name: axi4lite_top
+// Module Name: tt_um_axi4lite_top
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -51,7 +51,7 @@ module tt_um_axi4lite_top
      assign start_read=ui_in[4];
      assign uo_out[0]=done;
      assign uo_out[7:1]=0;
-     assign uio_oe=0;
+
      
     // Expose AXI signals for simulation visibility
      wire [1:0] awaddr;
@@ -71,7 +71,7 @@ module tt_um_axi4lite_top
      wire [1:0]            rresp;
      wire                  rvalid;
      wire                  rready;
-     
+ 
     // Master instance
     axi4lite_master master_inst (
         .m_axi_aclk    (clk),
@@ -136,5 +136,5 @@ module tt_um_axi4lite_top
         .s_axi_rvalid  (rvalid),
         .s_axi_rready  (rready)
     );
-
+assign uio_oe = 8'hFF;
 endmodule
