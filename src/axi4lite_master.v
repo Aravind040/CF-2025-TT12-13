@@ -49,7 +49,7 @@ module axi4lite_master
     input  wire                          m_axi_arready,
 
     // Read data channel
-    input  wire [1:0] m_axi_rdata,
+    input  wire [7:0] m_axi_rdata,
     input  wire [1:0]                    m_axi_rresp,
     input  wire                          m_axi_rvalid,
     output reg                           m_axi_rready,
