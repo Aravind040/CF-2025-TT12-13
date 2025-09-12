@@ -1,25 +1,3 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 06.09.2025 15:00:27
-// Design Name: 
-// Module Name: axi4lite_slave
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
-
 module axi4lite_slave 
 (
     input  wire        s_axi_aclk,
@@ -57,7 +35,7 @@ module axi4lite_slave
 
     reg [1:0] awaddr_reg;
     reg       awvalid_seen;
-
+    integer i;
     always @(posedge s_axi_aclk) begin
         if (!s_axi_aresetn) begin
             s_axi_awready <= 0;
@@ -69,6 +47,9 @@ module axi4lite_slave
             s_axi_rresp   <= 2'b00;
             s_axi_rdata   <= 8'h00;
             awvalid_seen  <= 0;
+            for (i = 0; i < 4; i = i + 1) begin
+                        regfile[i] <= 8'h00;
+            end
         end else begin
             // defaults
             s_axi_awready <= 0;
