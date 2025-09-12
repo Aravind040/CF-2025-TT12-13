@@ -44,8 +44,9 @@ TOPLEVEL = axi4lite_tb
 # Python test module
 MODULE = test
 
-# Resolve X/Z automatically → ZERO
-export COCOTB_RESOLVE_X = ZERO
+# Resolve X/Z automatically → 0
+export COCOTB_RESOLVE_X = zero
 
-# Include cocotb make rules
-include $(shell cocotb-config --makefiles)/Makefile.sim
+# Cocotb make rules
+COCOTB_MAKEFILES := $(shell cocotb-config --makefiles)
+include $(COCOTB_MAKEFILES)/Makefile.sim
