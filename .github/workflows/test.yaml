@@ -34,7 +34,7 @@ jobs:
         env:
           RANDOM_SEED: ${{ github.run_id }}
           COCOTB_LOG_LEVEL: DEBUG
-          COCOTB_RESOLVE_X: ZEROS
+          COCOTB_RESOLVE_X: "0"   # ✅ Fix: was ZEROS
 
       - name: Test Summary
         uses: test-summary/action@v2.3
