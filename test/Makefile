@@ -40,6 +40,4 @@ TOPLEVEL = axi4lite_tb
 # MODULE is the basename of the Python test file
 MODULE = test
 
-# include cocotb's make rules to take care of the simulator setup
-COCOTB_MAKEFILES := $(shell cocotb-config --makefiles)
-include $(COCOTB_MAKEFILES)/Makefile.sim
+include $(shell cocotb-config --makefiles)/Makefile.sim
