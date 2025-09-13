@@ -42,7 +42,7 @@ jobs:
     needs: gds
     runs-on: ubuntu-24.04
     env:
-      COCOTB_RESOLVE_X: 0  # ✅ Fix: was ZERO
+      COCOTB_RESOLVE_X: ZERO  # ✅ Fix: was ZERO
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
